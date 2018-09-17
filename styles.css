@@ -1,0 +1,18 @@
+body {
+  background-color:black;
+}
+
+.tv {
+  border-radius: 15px;
+  background-color: blue;
+  color: white;
+}
+
+.card-front {
+  font-family: 'Roboto Condensed', sans-serif;
+  text-align: center;
+}
+
+.card-back {
+
+}
