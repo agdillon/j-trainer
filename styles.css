@@ -8,11 +8,12 @@ body {
   color: white;
 }
 
-.card-front {
+.category-card {
   font-family: 'Roboto Condensed', sans-serif;
   text-align: center;
 }
 
-.card-back {
-
+.question-card {
+  font-family: 'Merriweather', serif;
+  text-align: center;
 }
