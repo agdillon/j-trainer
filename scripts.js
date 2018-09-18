@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // this function sets up the empty categories board
   // may need to clear previous display content when coming back to it
-  function makeCategoriesModule() {
+  function makeCategoriesScreen() {
     let howManyRows = 2
     let rows = []
     for (let j = 1; j <= howManyRows; j++) {
@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // main program starts here
-  makeCategoriesModule()
+  makeCategoriesScreen()
 
   // grab category data, add categories to board, add click listeners
   //
@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault()
         let idNumberString = this.id.slice(3)
         let catNoOnBoard = parseInt(idNumberString, 10) - 1
-        makeQuestionsModule(catNoOnBoard, cats[catNoOnBoard])
+        makeQuestionsScreen(catNoOnBoard, cats[catNoOnBoard])
       }
 
       // this function puts the question into its questionTV div
@@ -67,20 +67,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
         infoHeader.textContent = `${category.title} — $${qValue} — ${questionNumber + 1} of 5`
         questionTVText.textContent = question
+
+        // need to clear answer blank and alert
+        let answer = document.getElementById("answer")
+        answer.value = ""
+        let feedback = document.getElementById("feedback")
+        if (feedback) {
+          feedback.parentElement.removeChild(feedback)
+        }
       }
 
       // this function makes the board setup for the questions
       // and gets the question data via AJAX, then displays first q
-      function makeQuestionsModule(catNoOnBoard, category) {
-        // remove event listeners
-        for (let i = 0; i < howManyCategories; i++) {
-          let catClickArea = document.getElementById(`cat${i + 1}`)
-          catClickArea.removeEventListener("click", selectCategory)
-        }
+      function makeQuestionsScreen(catNoOnBoard, category) {
+        // remove event listeners - commented out because the elements will be hidden
+        // for (let i = 0; i < howManyCategories; i++) {
+        //   let catClickArea = document.getElementById(`cat${i + 1}`)
+        //   catClickArea.removeEventListener("click", selectCategory)
+        // }
 
-        // remove categories module
-        while (display.firstChild) {
-          display.removeChild(display.firstChild)
+        // remove -- now hide! -- categories screen
+        // while (display.firstChild) {
+        // display.removeChild(display.firstChild)
+        // }
+        for (let i = 0; i < display.children.length; i++) {
+          display.children[i].hidden = true
         }
 
         axios.get(`http://jservice.io/api/category?id=${category.id}`)
@@ -93,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let infoRow = document.createElement("div")
             infoRow.classList = "row"
             let infoCol = document.createElement("div")
-            infoCol.classList = "col-md-6 offset-md-2 text-light text-center"
+            infoCol.classList = "col-md-8 offset-md-1 text-light text-center"
             let infoHeader = document.createElement("h2")
             infoHeader.setAttribute("id", "info-header")
             infoCol.appendChild(infoHeader)
@@ -112,40 +123,123 @@ document.addEventListener("DOMContentLoaded", () => {
             qRow.appendChild(questionTV)
             display.appendChild(qRow)
 
-            // get first question
-            let currentQ = 0
-            getQuestion(currentQ, questionsArr, category)
-
             // make a "next question" button
-            let nextQRow = document.createElement("div")
-            nextQRow.classList = "row"
-            let nextQCol = document.createElement("div")
-            nextQCol.classList = "col-md-4 offset-md-3 text-center pt-2"
+            let bottomRow = document.createElement("div")
+            bottomRow.classList = "row"
+            let bottomCol = document.createElement("div")
+            bottomCol.classList = "col-md-4 offset-md-3 text-center pt-2"
             let nextQButton = document.createElement("button")
             nextQButton.setAttribute("type", "button")
             nextQButton.className = "btn btn-light"
             nextQButton.setAttribute("id", "next-q-button")
             nextQButton.textContent = "Next question"
-            nextQCol.appendChild(nextQButton)
-            nextQRow.appendChild(nextQCol)
-            display.appendChild(nextQRow)
+            bottomCol.appendChild(nextQButton)
+            bottomRow.appendChild(bottomCol)
+            display.appendChild(bottomRow)
+
+            // answer blank and submit button
+            let form = document.createElement("form")
+            let formDiv = document.createElement("div")
+            formDiv.classList = "form-group"
+            let input = document.createElement("input")
+            input.classList = "form-control"
+            input.setAttribute("id", "answer")
+            input.setAttribute("placeholder", "Your answer")
+            let submit = document.createElement("button")
+            submit.classList = "btn btn-light"
+            submit.setAttribute("type", "submit")
+            submit.textContent = "Check Answer"
+            formDiv.appendChild(input)
+            formDiv.appendChild(submit)
+            form.appendChild(formDiv)
+            bottomCol.insertBefore(form, nextQButton)
+
+            // get first question
+            let currentQ = 0
+            getQuestion(currentQ, questionsArr, category)
 
             function nextQ() {
               currentQ++
               getQuestion(currentQ, questionsArr, category)
 
+              function showCategories() {
+                for (let i = 0; i < display.children.length; i++) {
+                  display.children[i].hidden = false
+                }
+
+                // then need to remove question screen
+                // (remove vs. hide because getting new q's will be another
+                // AJAX request no matter what)
+                infoRow.parentElement.removeChild(infoRow)
+                qRow.parentElement.removeChild(qRow)
+                bottomCol.parentElement.removeChild(bottomCol)
+              }
+
               // need to remove nextQButton when on last question
               if (currentQ === 4) {
                 nextQButton.removeEventListener("click", nextQ)
                 nextQButton.parentElement.removeChild(nextQButton)
+
+                // add a button to go back to the categories screen
+                let showCategoriesButton = document.createElement("button")
+                showCategoriesButton.classList = "btn btn-light"
+                showCategoriesButton.textContent = "Back to categories"
+                bottomCol.appendChild(showCategoriesButton)
+                showCategoriesButton.addEventListener("click", showCategories)
               }
             }
 
             nextQButton.addEventListener("click", nextQ)
 
-            // answer blank and submit button
+            function checkAnswer(event) {
+              event.preventDefault()
 
+              function normalizeAnswer(ans) {
+                ans = ans.toLowerCase()
 
+                if (ans.indexOf("what is ") === 0) { ans = ans.slice(8) }
+
+                if (ans.indexOf("who is ") === 0) { ans = ans.slice(7) }
+
+                if (ans.indexOf("the ") === 0) { ans = ans.slice(4) }
+
+                if (ans.indexOf("a ") === 0) { ans = ans.slice(2) }
+
+                if (ans.indexOf("an ") === 0) { ans = ans.slice(3) }
+
+                if (ans.indexOf("?") === ans.length - 1) { ans = ans.slice(0, ans.length - 1) }
+
+                return ans
+              }
+
+              // need to get answer from response.data
+              let answer = questionsArr[currentQ].answer
+              guess = normalizeAnswer(input.value)
+
+              let feedback = document.createElement("div")
+              feedback.setAttribute("id", "feedback")
+              // do some stuff to both input and right answer (can test without this)
+              // then check input against answer
+              // increment right or wrong answers in local storage (doesn't exist yet)
+              // and give some feedback - right/wrong and correct answer
+              // also, you shouldn't be able to answer more than once
+              if (guess === normalizeAnswer(answer)) {
+                feedback.classList = "alert alert-success"
+                feedback.textContent = "Correct!"
+                bottomCol.insertBefore(feedback, nextQButton)
+              }
+              else {
+                feedback.classList = "alert alert-danger"
+                feedback.textContent = `Incorrect!  The correct answer is "${answer}".`
+                bottomCol.insertBefore(feedback, nextQButton)
+              }
+            }
+
+            // // need to get answer from response.data
+            // let answer = questionsArr[currentQ].answer.toLowerCase()
+            let guess = ""
+            // take answer from form blank (value) with event listener on submit button
+            submit.addEventListener("click", checkAnswer)
           })
       }
     })
