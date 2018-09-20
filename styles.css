@@ -1,5 +1,5 @@
 body {
-  background-color:black;
+  background-color: black;
 }
 
 .tv {
@@ -17,4 +17,13 @@ body {
 
 .question-card {
   font-family: 'Merriweather', serif;
+}
+
+#username {
+  margin-top: 0.35em;
+}
+
+#play {
+  background-color: blue;
+  border-color: blue;
 }
