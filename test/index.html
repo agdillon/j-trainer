@@ -11,18 +11,22 @@
     <link href="https://fonts.googleapis.com/css?family=Merriweather" rel="stylesheet">
   </head>
   <body>
-    <nav class="navbar navbar-expand-md navbar-dark mt-1">
-      <ul class="navbar-nav ml-auto">
-        <li class="nav-item text-light" id = "username"></li>
-        <li class="nav-item">
-          <span class="mx-2 text-light">&bull;</span>
-          <button class="btn btn-dark" id = "statistics">Statistics</button>
-        </li>
-      </ul>
-    </nav>
-    <div class = "container-fluid">
-      <div class = "offset-md-2 mt-3" id="display">
-      </div>
+      <nav class="navbar navbar-expand-md navbar-dark mt-1">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item text-light" id = "username"></li>
+          <li class="nav-item">
+            <span class="ml-2 mr-1 text-light">&bull;</span>
+            <button class="btn btn-dark" id = "statistics">Statistics</button>
+          </li>
+          <li class="nav-item">
+            <span class="ml-2 mr-1 text-light">&bull;</span>
+            <button class="btn btn-primary" id = "play">Play!</button>
+          </li>
+        </ul>
+      </nav>
+      <div class = "container-fluid">
+        <div class = "offset-md-2 offset-sm-0 mt-3" id="display">
+        </div>
     </div>
     <div id="mocha"></div>
     <script src="chai.js"></script>

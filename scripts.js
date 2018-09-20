@@ -131,15 +131,14 @@ function makeCategoriesScreen() {
     display.removeChild(display.lastChild)
   }
 
-  let howManyRows = 2 // all of this should be rewritten to be responsive
   let rows = []
-  for (let j = 1; j <= howManyRows; j++) {
+  for (let j = 1; j <= 2; j++) { // 2 rows
     rows[j] = document.createElement("div")
     rows[j].className = "row my-2"
 
-    for (let i = 1; i <= 6 / howManyRows; i++) {
+    for (let i = 1; i <= 3; i++) { // 3 items in each row
       let catTV = document.createElement("div")
-      catTV.className = "col-md-3 mx-1 d-flex align-items-center justify-content-center tv category-card"
+      catTV.className = "col-md-3 col-sm-12 mx-1 d-flex align-items-center justify-content-center tv category-card"
       catTV.addEventListener("click", selectCategory)
 
       if (j === 1) {
@@ -206,7 +205,6 @@ function makeQuestionsScreen(catNoOnBoard, category) {
   // get questions for selected category id
   axios.get(`http://jservice.io/api/category?id=${category.id}`)
     .then((qresponse) => {
-      console.log(qresponse.data)
       let questionsArr = qresponse.data.clues
 
       // make a space for the category name and dollar value info
@@ -359,6 +357,8 @@ function normalizeAnswer(ans) {
 
   if (ans.indexOf("what is ") === 0) { ans = ans.slice(8) }
 
+  if (ans.indexOf("what are ") === 0) { ans = ans.slice(9) }
+
   if (ans.indexOf("who is ") === 0) { ans = ans.slice(7) }
 
   if (ans.indexOf("the ") === 0) { ans = ans.slice(4) }
@@ -368,6 +368,8 @@ function normalizeAnswer(ans) {
   if (ans.indexOf("an ") === 0) { ans = ans.slice(3) }
 
   if (ans.indexOf("?") === ans.length - 1) { ans = ans.slice(0, ans.length - 1) }
+
+  ans.replace(/^<.*>(.*)<\/.*>$/, "$1")
 
   return ans
 }
@@ -379,8 +381,6 @@ function populateCategories() {
 
   axios.get(`http://jservice.io/api/categories?count=6&offset=${offset}`)
     .then((response) => {
-      console.log(response.data)
-
       // add category text to board and click listener for each category
       for (let i = 0; i < response.data.length; i++) {
         let id = response.data[i].id
