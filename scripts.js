@@ -221,7 +221,6 @@ function makeQuestionsScreen(catNoOnBoard, category) {
 
       // make question TV
       let questionTV = document.createElement("div")
-      // questionTV.setAttribute("id", "question-TV")
       questionTV.className = "col-md-4 offset-md-3 tv question-card"
       let questionTVText = document.createElement("h1")
       questionTVText.id = "question-TV-text"
@@ -259,7 +258,7 @@ function makeQuestionsScreen(catNoOnBoard, category) {
       input.id = "answer"
       input.setAttribute("placeholder", "Your answer")
       let submit = document.createElement("button")
-      submit.className = "btn btn-light"
+      submit.className = "btn btn-light mt-2"
       submit.setAttribute("type", "submit")
       submit.textContent = "Check Answer"
       answerFormDiv.appendChild(input)
@@ -309,7 +308,10 @@ function makeQuestionsScreen(catNoOnBoard, category) {
 
         // normalize both the answer from the API and the guess
         // then check whether they are the same
-        if (normalizeAnswer(guess) === normalizeAnswer(answer)) {
+        // I do some of the normalizing on the answer here instead of in the
+        // normalizeAnswer function because I don't want it to display
+        // in lowercase or without the/a/an when giving correct answer
+        if (normalizeInput(guess) === normalizeAnswer(answer).toLowerCase().replace(/^(the|a|an) (.*)/, "$2")) {
           users[name].right++
           localStorage.setItem("users", JSON.stringify(users))
           feedback.className = "alert alert-success"
@@ -320,7 +322,7 @@ function makeQuestionsScreen(catNoOnBoard, category) {
           users[name].wrong++
           localStorage.setItem("users", JSON.stringify(users))
           feedback.className = "alert alert-danger"
-          feedback.textContent = `Incorrect!  The correct answer is "${answer}".`
+          feedback.textContent = `Incorrect!  The correct answer is "${normalizeAnswer(answer)}".`
         }
 
         bottomCol.insertBefore(feedback, bottomButton)
@@ -350,26 +352,29 @@ function showCategories() {
   bottomCol.parentElement.removeChild(bottomCol)
 }
 
+// clean up API answers
+function normalizeAnswer(ans) {
+  ans = ans.replace(/^<.*>(.*)<\/.*>$/, "$1") // get rid of HTML tags
+  ans = ans.replace(/^"(.*)"$/, "$1") // get rid of quotation marks
+  ans = ans.replace(/(.[^\\]*)\\(.*)/g, "$&") // get rid of backslash escape chars
+  ans = ans.replace(/^\((.[^(]*)\)/, "$1") // get rid of parens around first name
+
+  return ans
+}
+
 // this function gets rid of "what is", "who is", "the", "a", "an" at
 // beginning of answer and "?" at end, as well as lowercases everything
-function normalizeAnswer(ans) {
+function normalizeInput(ans) {
   ans = ans.toLowerCase()
 
-  if (ans.indexOf("what is ") === 0) { ans = ans.slice(8) }
+  // gets rid of "what is"/"what are"/"who is"/"who are"
+  ans = ans.replace(/^(who|what) (is|are) (.*)/, "$3")
 
-  if (ans.indexOf("what are ") === 0) { ans = ans.slice(9) }
+  // gets rid of the/a/an
+  ans = ans.replace(/^(the|a|an) (.*)/, "$2")
 
-  if (ans.indexOf("who is ") === 0) { ans = ans.slice(7) }
-
-  if (ans.indexOf("the ") === 0) { ans = ans.slice(4) }
-
-  if (ans.indexOf("a ") === 0) { ans = ans.slice(2) }
-
-  if (ans.indexOf("an ") === 0) { ans = ans.slice(3) }
-
-  if (ans.indexOf("?") === ans.length - 1) { ans = ans.slice(0, ans.length - 1) }
-
-  ans.replace(/^<.*>(.*)<\/.*>$/, "$1")
+  // gets rid of question mark
+  ans = ans.replace(/(.[^?]*)\??$/, "$1")
 
   return ans
 }
